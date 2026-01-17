@@ -34,7 +34,7 @@ jobs:
         working-directory: ./src
         run: |
           go mod vendor
-          go test -v -mod=vendor ./...
+          go test -v -short -mod=vendor ./...
 
   build:
     name: Build

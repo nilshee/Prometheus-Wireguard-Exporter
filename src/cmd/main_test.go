@@ -42,6 +42,9 @@ func TestValidateCustomFlags(t *testing.T) {
 }
 
 func TestMetricsEndpoint(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test that requires WireGuard interfaces")
+	}
 
 	registry := wgprometheus.GetRegistry()
 

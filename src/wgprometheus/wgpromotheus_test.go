@@ -32,6 +32,10 @@ func TestMonitorAllInterfaces(t *testing.T) {
 }
 
 func TestGetIntefacesIntergation(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test that requires WireGuard interfaces")
+	}
+	
 	// look in the setup/wireguard/wg0_host_1.conf
 	interfaces, _ := getInterfaces()
 
