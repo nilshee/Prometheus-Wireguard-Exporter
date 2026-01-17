@@ -1,9 +1,9 @@
 module github.com/sathiraumesh/wireguard_exporter
 
-go 1.20
+go 1.25
 
 require (
-	github.com/prometheus/client_golang v1.18.0
+	github.com/prometheus/client_golang v1.23.2
 	golang.zx2c4.com/wireguard/wgctrl v0.0.0-20230429144221-925a1e7659e6
 )
 
