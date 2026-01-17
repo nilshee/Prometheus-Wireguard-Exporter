@@ -17,13 +17,15 @@ import (
 // mocked default flag values that we expect for exporter
 var defaultPort = flag.Int("test-default-p", DEFALULT_PORT, "the port to listen on")
 var defaultInterface = flag.String("test-default-i", "", "comma-separated list of interfaces")
+var defaultListenAddr = flag.String("test-default-l", "", "the address to listen on")
 
 // mocked custom flag values that we expect for exporter
 var customPort = flag.Int("test-custom-i", 8080, "the port to listen on")
 var customInterface = flag.String("test-custom-p", "wg0,wg1", "comma-separated list of interfaces")
+var customListenAddr = flag.String("test-custom-l", "127.0.0.1", "the address to listen on")
 
 func TestValidatesDefaultFlags(t *testing.T) {
-	interfaces, port, _ := validateReturnFlags(*defaultInterface, *defaultPort)
+	interfaces, port, _ := validateReturnFlags(*defaultInterface, *defaultPort, *defaultListenAddr)
 
 	assert.Empty(t, interfaces, "default flags for interface should be empty")
 
@@ -32,13 +34,22 @@ func TestValidatesDefaultFlags(t *testing.T) {
 }
 
 func TestValidateCustomFlags(t *testing.T) {
-	interfaces, port, _ := validateReturnFlags(*customInterface, *customPort)
+	interfaces, port, _ := validateReturnFlags(*customInterface, *customPort, *defaultListenAddr)
 
 	assert.NotEmpty(t, interfaces, "custom flags for (-i) interface should not be empty")
 	assert.Equal(t, len(interfaces), 2, "invalid interface count")
 
 	expectedPort := ":" + strconv.Itoa(*customPort)
 	assert.Equalf(t, port, expectedPort, "invalid custom port %s", port)
+}
+
+func TestValidateCustomListenAddr(t *testing.T) {
+	interfaces, port, _ := validateReturnFlags(*defaultInterface, *customPort, *customListenAddr)
+
+	assert.Empty(t, interfaces, "default flags for interface should be empty")
+
+	expectedPort := *customListenAddr + ":" + strconv.Itoa(*customPort)
+	assert.Equalf(t, port, expectedPort, "invalid listen address and port combination, expected %s, got %s", expectedPort, port)
 }
 
 func TestMetricsEndpoint(t *testing.T) {

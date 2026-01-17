@@ -15,13 +15,14 @@ const SCRAP_INTERVAL = time.Second * 5
 const DEFALULT_PORT = 9011
 
 var port = flag.Int("p", DEFALULT_PORT, "the port to listen on")
+var listenAddr = flag.String("l", "", "the address to listen on (default: all interfaces)")
 var interfaces = flag.String("i", "", "comma-separated list of interfaces")
 
 func main() {
 
 	flag.Parse()
 
-	interfaces, port, _ := validateReturnFlags(*interfaces, *port)
+	interfaces, port, _ := validateReturnFlags(*interfaces, *port, *listenAddr)
 
 	registry := wgprometheus.GetRegistry()
 
@@ -34,9 +35,13 @@ func main() {
 	http.ListenAndServe(port, nil)
 }
 
-func validateReturnFlags(interfaceArg string, portArg int) (interfaces []string, port string, configPath string) {
+func validateReturnFlags(interfaceArg string, portArg int, listenAddrArg string) (interfaces []string, port string, configPath string) {
 
-	port = ":" + strconv.Itoa(portArg)
+	if strings.TrimSpace(listenAddrArg) != "" {
+		port = listenAddrArg + ":" + strconv.Itoa(portArg)
+	} else {
+		port = ":" + strconv.Itoa(portArg)
+	}
 
 	if strings.TrimSpace(interfaceArg) != "" {
 		interfaces = strings.Split(interfaceArg, ",")

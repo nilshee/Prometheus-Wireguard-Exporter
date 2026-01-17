@@ -2,10 +2,11 @@
 A simple minimalistic wireguard connection stats exporter for Prometheus.
  
 ## Usage
-```wireguard_exporter -p 9011 -i=wg1,wg2,wg3```
+```wireguard_exporter -p 9011 -l 127.0.0.1 -i=wg1,wg2,wg3```
 | Flag | Descriptions  |  Specs                    |
 | :-------- | :------- | :-------------------------------- |
 | `-p` | exporter listning port| No(defaults to 9011)|
+| `-l` | address to listen on (e.g., 127.0.0.1, 192.168.1.10) | No(defaults to all interfaces)|
 | `-i` | list of comma seperated interface names to monitor  | No(monitors all if not specifed)| 
 
 # Exported metrics
