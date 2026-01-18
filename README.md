@@ -64,6 +64,86 @@ Currently, there are no binaries. To build from the source run the following com
   make
 ```
 
+### Systemd Service Setup
+
+To run the Wireguard exporter as a systemd service, follow these steps:
+
+#### 1. Build and Install the Binary
+
+```bash
+# Build the binary
+cd src
+go build -o wireguard_exporter ./cmd/
+
+# Install to system directory
+mkdir -p /opt/wireguard_exporter
+sudo cp wireguard_exporter /opt/wireguard_exporter/
+sudo chmod +x /opt/wireguard_exporter/wireguard_exporter
+```
+
+#### 2. Create a Systemd Service File
+
+Create a service file at `/etc/systemd/system/wireguard_exporter.service`:
+
+```bash
+sudo nano /etc/systemd/system/wireguard_exporter.service
+```
+
+Add the following content:
+
+```ini
+[Unit]
+Description=Prometheus Wireguard Exporter
+Documentation=https://github.com/sathiraumesh/Prometheus-Wireguard-Exporter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+# Adjust command-line flags as needed
+ExecStart=/opt/wireguard_exporter/wireguard_exporter -p 9011
+
+# Security settings
+CapabilityBoundingSet=CAP_NET_ADMIN
+AmbientCapabilities=CAP_NET_ADMIN
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+# Restart policy
+Restart=on-failure
+RestartSec=5s
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wireguard_exporter
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Configuration Options:**
+
+To enable basic authentication:
+```ini
+ExecStart=/opt/wireguard_exporter/wireguard_exporter -p 9011 -auth-user prometheus -auth-pass secretpassword
+```
+
+To enable verbose logging:
+```ini
+ExecStart=/opt/wireguard_exporter/wireguard_exporter -p 9011 -verbose
+```
+
+To monitor specific interfaces:
+```ini
+ExecStart=/opt/wireguard_exporter/wireguard_exporter -p 9011 -i wg0,wg1
+```
+
 ## Test
 ```bash
   make test
