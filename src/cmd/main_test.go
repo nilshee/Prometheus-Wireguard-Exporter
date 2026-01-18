@@ -88,3 +88,87 @@ func TestMetricsEndpoint(t *testing.T) {
 
 	assert.Contains(t, responseText, `public_key="HYf+yNzgj3uhARFlNy3Pawuk/yLC+WYoY2qwjjlSxxI="`)
 }
+
+func TestBasicAuthMiddleware(t *testing.T) {
+	// Create a test handler
+	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("success"))
+	})
+
+	// Wrap it with basic auth
+	authHandler := basicAuthMiddleware(testHandler, "testuser", "testpass")
+
+	tests := []struct {
+		name           string
+		username       string
+		password       string
+		expectedStatus int
+		expectedBody   string
+	}{
+		{
+			name:           "Valid credentials",
+			username:       "testuser",
+			password:       "testpass",
+			expectedStatus: http.StatusOK,
+			expectedBody:   "success",
+		},
+		{
+			name:           "Invalid username",
+			username:       "wronguser",
+			password:       "testpass",
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   "Unauthorized\n",
+		},
+		{
+			name:           "Invalid password",
+			username:       "testuser",
+			password:       "wrongpass",
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   "Unauthorized\n",
+		},
+		{
+			name:           "Empty credentials",
+			username:       "",
+			password:       "",
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody:   "Unauthorized\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/metrics", nil)
+			if tt.username != "" || tt.password != "" {
+				req.SetBasicAuth(tt.username, tt.password)
+			}
+
+			rr := httptest.NewRecorder()
+			authHandler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.expectedStatus, rr.Code)
+			assert.Equal(t, tt.expectedBody, rr.Body.String())
+
+			if tt.expectedStatus == http.StatusUnauthorized {
+				assert.Equal(t, `Basic realm="Wireguard Exporter"`, rr.Header().Get("WWW-Authenticate"))
+			}
+		})
+	}
+}
+
+func TestBasicAuthMiddlewareWithoutAuth(t *testing.T) {
+	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("success"))
+	})
+
+	req := httptest.NewRequest("GET", "/metrics", nil)
+	rr := httptest.NewRecorder()
+
+	// Test handler without authentication middleware
+	testHandler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "success", rr.Body.String())
+}
+

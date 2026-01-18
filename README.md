@@ -3,11 +3,34 @@ A simple minimalistic wireguard connection stats exporter for Prometheus.
  
 ## Usage
 ```wireguard_exporter -p 9011 -l 127.0.0.1 -i=wg1,wg2,wg3```
-| Flag | Descriptions  |  Specs                    |
+
+### Command-line Options
+| Flag | Descriptions  |  Required                    |
 | :-------- | :------- | :-------------------------------- |
-| `-p` | exporter listning port| No(defaults to 9011)|
-| `-l` | address to listen on (e.g., 127.0.0.1, 192.168.1.10) | No(defaults to all interfaces)|
-| `-i` | list of comma seperated interface names to monitor  | No(monitors all if not specifed)| 
+| `-p` | exporter listening port| No (defaults to 9011)|
+| `-l` | address to listen on (e.g., 127.0.0.1, 192.168.1.10) | No (defaults to all interfaces)|
+| `-i` | list of comma separated interface names to monitor  | No (monitors all if not specified)| 
+| `-auth-user` | basic auth username | No (authentication disabled if not provided)|
+| `-auth-pass` | basic auth password | No (authentication disabled if not provided)|
+
+### Basic Authentication
+To enable basic authentication, provide both `-auth-user` and `-auth-pass` flags:
+```bash
+wireguard_exporter -p 9011 -auth-user prometheus -auth-pass secretpassword
+```
+
+If only one of the authentication flags is provided, authentication will be disabled. Both username and password must be specified to enable basic auth.
+
+When basic auth is enabled, Prometheus needs to be configured with the credentials:
+```yaml
+scrape_configs:
+  - job_name: 'wireguard'
+    static_configs:
+      - targets: ['localhost:9011']
+    basic_auth:
+      username: 'prometheus'
+      password: 'secretpassword'
+``` 
 
 # Exported metrics
 - Latest Handshake 
