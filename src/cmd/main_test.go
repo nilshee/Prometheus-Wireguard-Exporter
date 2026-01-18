@@ -172,3 +172,74 @@ func TestBasicAuthMiddlewareWithoutAuth(t *testing.T) {
 	assert.Equal(t, "success", rr.Body.String())
 }
 
+func TestLoggingMiddleware(t *testing.T) {
+	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("success"))
+	})
+
+	loggingHandler := loggingMiddleware(testHandler)
+
+	tests := []struct {
+		name           string
+		remoteAddr     string
+		headers        map[string]string
+		expectedStatus int
+	}{
+		{
+			name:           "Simple request",
+			remoteAddr:     "192.168.1.100:54321",
+			headers:        map[string]string{},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:       "Request with X-Forwarded-For",
+			remoteAddr: "10.0.0.1:12345",
+			headers: map[string]string{
+				"X-Forwarded-For": "203.0.113.1, 192.168.1.1",
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
+			name:       "Request with X-Real-IP",
+			remoteAddr: "10.0.0.1:12345",
+			headers: map[string]string{
+				"X-Real-IP": "203.0.113.2",
+			},
+			expectedStatus: http.StatusOK,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/metrics", nil)
+			req.RemoteAddr = tt.remoteAddr
+			for k, v := range tt.headers {
+				req.Header.Set(k, v)
+			}
+
+			rr := httptest.NewRecorder()
+			loggingHandler.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.expectedStatus, rr.Code)
+			assert.Equal(t, "success", rr.Body.String())
+		})
+	}
+}
+
+func TestResponseWriter(t *testing.T) {
+	rr := httptest.NewRecorder()
+	wrapped := &responseWriter{ResponseWriter: rr, statusCode: http.StatusOK}
+
+	// Test default status code
+	assert.Equal(t, http.StatusOK, wrapped.statusCode)
+
+	// Test custom status code
+	wrapped.WriteHeader(http.StatusNotFound)
+	assert.Equal(t, http.StatusNotFound, wrapped.statusCode)
+
+	// Write content
+	wrapped.Write([]byte("test"))
+	assert.Equal(t, "test", rr.Body.String())
+}
+

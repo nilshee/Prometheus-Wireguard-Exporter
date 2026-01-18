@@ -12,6 +12,7 @@ A simple minimalistic wireguard connection stats exporter for Prometheus.
 | `-i` | list of comma separated interface names to monitor  | No (monitors all if not specified)| 
 | `-auth-user` | basic auth username | No (authentication disabled if not provided)|
 | `-auth-pass` | basic auth password | No (authentication disabled if not provided)|
+| `-verbose` | enable verbose logging (logs each request with source IP) | No (defaults to false)|
 
 ### Basic Authentication
 To enable basic authentication, provide both `-auth-user` and `-auth-pass` flags:
@@ -30,7 +31,24 @@ scrape_configs:
     basic_auth:
       username: 'prometheus'
       password: 'secretpassword'
-``` 
+```
+
+### Verbose Logging
+Enable verbose logging to see detailed information about each request including the source IP address:
+```bash
+wireguard_exporter -p 9011 -verbose
+```
+
+With verbose logging enabled, each request will be logged with:
+- HTTP method and path
+- HTTP status code
+- Request duration
+- Source IP address (respects `X-Forwarded-For` and `X-Real-IP` headers)
+
+Example log output:
+```
+[GET] /metrics HTTP/1.1 - Status: 200 - Duration: 2.5ms - Source IP: 192.168.1.10:54321
+```
 
 # Exported metrics
 - Latest Handshake 
