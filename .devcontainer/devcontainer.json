@@ -1,0 +1,69 @@
+{
+	"name": "Prometheus WireGuard Exporter",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"golang.go",
+				"ms-azuretools.vscode-docker",
+				"ms-vscode.makefile-tools",
+				"github.vscode-github-actions"
+			],
+			"settings": {
+				"go.toolsManagement.checkForUpdates": "local",
+				"go.useLanguageServer": true,
+				"go.gopath": "/go",
+				"go.goroot": "/usr/local/go",
+				"go.lintTool": "golangci-lint",
+				"go.lintOnSave": "package",
+				"go.vetOnSave": "package",
+				"go.formatTool": "gofmt",
+				"go.testFlags": ["-v"],
+				"editor.formatOnSave": true,
+				"[go]": {
+					"editor.defaultFormatter": "golang.go",
+					"editor.codeActionsOnSave": {
+						"source.organizeImports": "explicit"
+					}
+				}
+			}
+		}
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/go:1": {
+			"version": "1.25"
+		},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": true,
+			"installOhMyZsh": true,
+			"username": "vscode",
+			"userUid": "1000",
+			"userGid": "1000"
+		}
+	},
+	"forwardPorts": [9011, 3000, 9090],
+	"portsAttributes": {
+		"9011": {
+			"label": "WireGuard Exporter",
+			"onAutoForward": "notify"
+		},
+		"3000": {
+			"label": "Grafana",
+			"onAutoForward": "notify"
+		},
+		"9090": {
+			"label": "Prometheus",
+			"onAutoForward": "notify"
+		}
+	},
+	"postCreateCommand": "cd src && go mod download && go install golang.org/x/tools/gopls@latest",
+	"remoteUser": "vscode",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	]
+}
