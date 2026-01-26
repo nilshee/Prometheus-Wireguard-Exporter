@@ -22,7 +22,7 @@ jobs:
             ${{ runner.os }}-buildx-
           
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Run Tests
         run: |
           make test
