@@ -57,7 +57,7 @@ jobs:
           go build -o ../bin/wireguard_exporter -mod=vendor ./cmd/main.go
 
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: wireguard_exporter-dev
           path: bin/wireguard_exporter
