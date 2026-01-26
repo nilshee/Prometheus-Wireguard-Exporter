@@ -90,7 +90,9 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: wireguard_exporter-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goarm && format('v{0}', matrix.goarm) || '' }}
-          path: bin/*
+          path: |
+            bin/*.tar.gz
+            bin/*.zip
           retention-days: 1
 
   build-docker:
