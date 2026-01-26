@@ -20,7 +20,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     ./cmd
 
 # Runtime stage - use minimal base image
-FROM alpine:3.21
+FROM alpine:3.23
 
 # Install only WireGuard tools (much smaller than full Ubuntu)
 RUN apk add --no-cache wireguard-tools
