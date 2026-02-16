@@ -1,5 +1,5 @@
 # Test environment for Wireguard Exporter
-FROM golang:1.25-alpine
+FROM golang:1.26-alpine
 
 # Install WireGuard tools and testing utilities
 RUN apk add --no-cache \
